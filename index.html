@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ioussaidene Lina - Automation Engineer & Web Developer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #0a1128, #001f54, #0a1128, #034078);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            opacity: 0.9;
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 119, 182, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(0, 180, 216, 0.3) 0%, transparent 40%);
+            z-index: -1;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .tech-border {
+            position: relative;
+        }
+        
+        .tech-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #3b82f6);
+            z-index: -1;
+            border-radius: inherit;
+            background-size: 200% 200%;
+            animation: gradientBorder 3s ease infinite;
+        }
+        
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .skill-pill {
+            transition: all 0.3s ease;
+        }
+        
+        .skill-pill:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <!-- Navigation -->
+    <nav class="bg-gray-900 bg-opacity-80 backdrop-blur-md fixed w-full z-50 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <span class="text-blue-400 font-bold text-xl">IL</span>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#home" class="nav-link text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="#about" class="nav-link text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">About</a>
+                        <a href="#skills" class="nav-link text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Skills</a>
+                        <a href="#certificates" class="nav-link text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Certificates</a>
+                        <a href="#contact" class="nav-link text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button class="mobile-menu-button text-gray-400 hover:text-white focus:outline-none">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div class="mobile-menu hidden md:hidden bg-gray-900 bg-opacity-95">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Home</a>
+                <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">About</a>
+                <a href="#skills" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Skills</a>
+                <a href="#certificates" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Certificates</a>
+                <a href="#contact" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Contact</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+ <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-4 sm:px-6 lg:px-8">
+    <div class="w-full flex flex-col items-center justify-center text-center">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white">
+            <span class="text-blue-400">Ioussaidene</span> Lina
+        </h1>
+        <h2 class="text-2xl md:text-3xl font-semibold mb-6 text-gray-300">
+            Automation Engineer & Web Developer
+        </h2>
+        <p class="text-lg text-gray-400 mb-8 max-w-2xl">
+            Third-year Automation Engineering student at Mouloud Mammeri University, passionate about web development and digital technologies. This portfolio showcases my skills in web development and my journey in the tech world.
+        </p>
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+            <a href="#contact" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium transition duration-300">
+                Contact Me
+            </a>
+            <a href="#certificates" class="px-6 py-3 border border-blue-400 text-blue-400 hover:bg-blue-900 hover:bg-opacity-30 rounded-md font-medium transition duration-300">
+                View Certificates
+            </a>
+        </div>
+    </div>
+
+               <!-- <div class="md:w-1/2 flex justify-center">
+                    <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-400 shadow-xl">
+                         Replace with your photo 
+                        <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-400 shadow-xl">
+    <img src="your-photo.jpg" alt="Ioussaidene Lina" class="w-full h-full object-cover" />
+</div>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900 bg-opacity-70">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-12 text-center text-white">
+                <span class="text-blue-400">About</span> Me
+            </h2>
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/3 flex justify-center">
+                    <div class="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-blue-400 shadow-lg">
+                        <!-- Replace with your photo -->
+                        <div class="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-blue-400 shadow-lg">
+    <img src="portfoliopic.png" alt="Ioussaidene Lina" class="w-full h-full object-cover object-top md:object-center" />
+</div>
+                    </div>
+                </div>
+                <div class="md:w-2/3">
+                    <div class="bg-gray-800 bg-opacity-70 p-8 rounded-xl">
+                        <h3 class="text-2xl font-semibold mb-4 text-blue-400">My Journey</h3>
+                        <p class="text-gray-300 mb-4">
+                            Currently in my third year of Automation Engineering at Mouloud Mammeri University, I've developed a strong passion for web development and digital technologies. My academic background in automation has given me a unique perspective on problem-solving and system design.
+                        </p>
+                        <p class="text-gray-300 mb-4">
+                            Beyond my studies, I've dedicated myself to mastering web development technologies like HTML, CSS, and JavaScript. This portfolio itself is a testament to my skills in creating responsive, modern web interfaces.
+                        </p>
+                        <p class="text-gray-300 mb-4">
+                            I'm also proficient in English (B2 level), MATLAB, community management, digital marketing, and graphic design. This diverse skill set allows me to approach projects from multiple angles and deliver comprehensive solutions.
+                        </p>
+                        <p class="text-gray-300">
+                            As the founder of Digitalina, I've gained valuable experience in digital strategy and tech entrepreneurship, further enhancing my ability to create impactful digital solutions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-12 text-center text-white">
+                My <span class="text-blue-400">Skills</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Web Development -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-code text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Web Development</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Proficient in creating responsive and interactive websites using modern web technologies.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">HTML5</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">CSS3</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">JavaScript</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">TailwindCSS</span>
+                    </div>
+                </div>
+                
+                <!-- Automation Engineering -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-robot text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Automation Engineering</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Third-year student with strong foundation in automation systems and control engineering.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">MATLAB</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Control Systems</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">PLC</span>
+                    </div>
+                </div>
+                
+                <!-- Digital Marketing -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-bullhorn text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Digital Marketing</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Knowledge of digital marketing strategies and social media management.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">SEO</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Social Media</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Content Strategy</span>
+                    </div>
+                </div>
+                
+                <!-- Graphic Design -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-paint-brush text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Graphic Design</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Creating visually appealing designs for digital and print media.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">UI/UX</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Branding</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Adobe Photoshop</span>
+                    </div>
+                </div>
+                
+                <!-- Language Skills -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-language text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Language Skills</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Effective communication in multiple languages for global collaboration.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">English (B2)</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">French</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Arabic</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Kabylian</span>
+                    </div>
+                </div>
+                
+                <!-- Community Management -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-users text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Community Management</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Building and engaging online communities across various platforms.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Social Media</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Content Creation</span>
+                        <span class="skill-pill px-3 py-1 bg-blue-900 bg-opacity-30 text-blue-400 rounded-full text-sm">Engagement</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Certificates Section -->
+    <section id="certificates" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900 bg-opacity-70">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-12 text-center text-white">
+                My <span class="text-blue-400">Certificates</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Certificate 1 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Web Development Fundamentals</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certificate covering HTML, CSS, and JavaScript fundamentals.
+                    </p>
+                    <a href="https://www.mindluster.com/student/certificate/2254b0f0" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Certificate 2 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">English Language (B2 Level)</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certification of English language proficiency at B2 level.
+                    </p>
+                    <a href="https://cert.efset.org/idQWhP" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Certificate 3 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Digital Marketing Specialist</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certification in digital marketing strategies and tools.
+                    </p>
+                    <a href="#" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Certificate 4 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">MATLAB Programming</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certificate in MATLAB programming for engineering applications.
+                    </p>
+                    <a href="#" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Certificate 5 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Graphic Design Principles</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certification in fundamental graphic design principles.
+                    </p>
+                    <a href="#" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Certificate 6 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">Community Management</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certification in building and managing online communities.
+                    </p>
+                    <a href="#" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+
+                <!-- Certificate 7 -->
+                <div class="bg-gray-800 bg-opacity-70 p-6 rounded-xl card-hover transition duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                            <i class="fas fa-certificate text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white">MySQL from zero programming</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Certificate covering MySQL database management and programming.
+                    </p>
+                    <a href="https://www.mindluster.com/student/certificate/2d86928a" class="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center">
+                        View Certificate <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-12 text-center text-white">
+                <span class="text-blue-400">Contact</span> Me
+            </h2>
+            
+            <div class="bg-gray-800 bg-opacity-70 rounded-xl p-8 max-w-3xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-blue-400">Get in Touch</h3>
+                        <p class="text-gray-400 mb-6">
+                            Feel free to reach out for collaborations, opportunities, or just to say hello!
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="p-2 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                                    <i class="fas fa-envelope text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-white">Email</h4>
+                                    <a href="mailto:your.email@example.com" class="text-gray-400 hover:text-blue-400">lina.ioussaidene@fgei.ummto.dz</a>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="p-2 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                                    <i class="fas fa-phone-alt text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-white">Phone</h4>
+                                    <a href="tel:+1234567890" class="text-gray-400 hover:text-blue-400">+213 0675473618</a>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="p-2 rounded-full bg-blue-900 bg-opacity-30 mr-4">
+                                    <i class="fas fa-map-marker-alt text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-white">Location</h4>
+                                    <p class="text-gray-400">Mouloud Mammeri University, Algeria</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-blue-400">Connect With Me</h3>
+                        <p class="text-gray-400 mb-6">
+                            Follow me on social media to stay updated with my latest projects and activities.
+                        </p>
+                        
+                        <div class="flex space-x-4">
+                            <a href="https://www.linkedin.com/in/lina-ioussaidene-8961a8377/" class="p-3 bg-blue-900 bg-opacity-30 hover:bg-opacity-50 rounded-full text-blue-400 transition duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="https://github.com/lina-ioussaidene" class="p-3 bg-blue-900 bg-opacity-30 hover:bg-opacity-50 rounded-full text-blue-400 transition duration-300">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://www.instagram.com/_degitalina_/" class="p-3 bg-blue-900 bg-opacity-30 hover:bg-opacity-50 rounded-full text-blue-400 transition duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900 bg-opacity-90 py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <span class="text-blue-400 font-bold text-xl">IL</span>
+                    <p class="text-gray-400 text-sm mt-1">© 2025 Ioussaidene Lina. All rights reserved.</p>
+                    <p class="text text-white-200 text-sm mt-6">
+  Please note that not all of my skills are accompanied by official certifications. Some of them were acquired through academic courses at university, personal projects, and hands-on experience.
+  <br>
+  Also, my picture shown on this site is a regenerated version of myself created using AI.
+</p>
+
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#home" class="text-gray-400 hover:text-white">Home</a>
+                    <a href="#about" class="text-gray-400 hover:text-white">About</a>
+                    <a href="#skills" class="text-gray-400 hover:text-white">Skills</a>
+                    <a href="#certificates" class="text-gray-400 hover:text-white">Certificates</a>
+                    <a href="#contact" class="text-gray-400 hover:text-white">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Close mobile menu if open
+                mobileMenu.classList.add('hidden');
+            });
+        });
+        
+        // Add shadow to navbar on scroll
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 10) {
+                nav.classList.add('shadow-lg');
+            } else {
+                nav.classList.remove('shadow-lg');
+            }
+        });
+    </script>
+</body>
+</html>
