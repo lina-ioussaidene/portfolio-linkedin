@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUIZER - Jeu de Quiz Pixel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #121212;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        
+        .pixel-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%) -50px 0,
+                linear-gradient(-45deg, #1a1a1a 25%, transparent 25%) -50px 0,
+                linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 100px 100px;
+            z-index: -1;
+            animation: moveBg 20s linear infinite;
+        }
+        
+        @keyframes moveBg {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 100px; }
+        }
+        
+        .pixel-title {
+            text-shadow: 4px 4px 0px #8a2be2;
+            letter-spacing: 2px;
+        }
+        
+        .pixel-box {
+            border: 4px solid #8a2be2;
+            box-shadow: 8px 8px 0px rgba(138, 43, 226, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pixel-box::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, rgba(138, 43, 226, 0.1) 25%, transparent 25%) -50px 0,
+                linear-gradient(-45deg, rgba(138, 43, 226, 0.1) 25%, transparent 25%) -50px 0,
+                linear-gradient(45deg, transparent 75%, rgba(138, 43, 226, 0.1) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(138, 43, 226, 0.1) 75%);
+            background-size: 20px 20px;
+            z-index: -1;
+        }
+        
+        .pixel-button {
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pixel-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(138, 43, 226, 0.6);
+        }
+        
+        .pixel-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(138, 43, 226, 0.6);
+        }
+        
+        .correct-answer {
+            animation: flashGreen 0.5s;
+        }
+        
+        .wrong-answer {
+            animation: flashRed 0.5s;
+        }
+        
+        @keyframes flashGreen {
+            0%, 100% { background-color: #2d3748; }
+            50% { background-color: #10b981; }
+        }
+        
+        @keyframes flashRed {
+            0%, 100% { background-color: #2d3748; }
+            50% { background-color: #ef4444; }
+        }
+        
+        .pixel-message {
+            border: 4px solid;
+            box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.4);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            padding: 2rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            border-color: #10b981;
+            background-color: #064e3b;
+            color: #a7f3d0;
+        }
+        
+        .error-message {
+            border-color: #ef4444;
+            background-color: #7f1d1d;
+            color: #fca5a5;
+        }
+        
+        .pixel-loader {
+            width: 16px;
+            height: 16px;
+            background-color: #8a2be2;
+            position: relative;
+            animation: pixelLoader 1s infinite steps(1);
+        }
+        
+        @keyframes pixelLoader {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(24px, 0); }
+            50% { transform: translate(24px, 24px); }
+            75% { transform: translate(0, 24px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="pixel-bg"></div>
+    
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="pixel-title text-5xl md:text-6xl text-purple-400 mb-4">QUIZER</h1>
+            <p class="text-lg text-purple-300">Testez vos connaissances dans différents domaines!</p>
+        </header>
+        
+        <div id="moduleSelection" class="pixel-box bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl text-purple-300 mb-6 text-center">Choisissez un module</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Les modules seront générés dynamiquement -->
+            </div>
+        </div>
+        
+        <div id="quizContainer" class="hidden pixel-box bg-gray-800 p-6 rounded-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="quizTitle" class="text-2xl text-purple-300"></h2>
+                <div id="progress" class="text-purple-300">Question <span id="currentQuestion">1</span>/8</div>
+            </div>
+            
+            <div id="questionContainer" class="mb-8">
+                <p id="questionText" class="text-xl mb-6"></p>
+                <div id="answersContainer" class="grid grid-cols-1 gap-3">
+                    <!-- Les réponses seront générées dynamiquement -->
+                </div>
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="prevBtn" class="pixel-button bg-gray-700 text-purple-300 px-4 py-2 rounded border-2 border-purple-500 hidden">
+                    ← Précédent
+                </button>
+                <button id="nextBtn" class="pixel-button bg-purple-600 text-white px-6 py-2 rounded border-2 border-purple-300 ml-auto">
+                    Suivant →
+                </button>
+            </div>
+        </div>
+        
+        <div id="resultsContainer" class="hidden pixel-box bg-gray-800 p-8 rounded-lg text-center">
+            <h2 class="text-3xl text-purple-300 mb-6">Résultats</h2>
+            <p id="scoreText" class="text-2xl mb-8"></p>
+            <p id="resultMessage" class="text-xl mb-8"></p>
+            <button id="restartBtn" class="pixel-button bg-purple-600 text-white px-6 py-3 rounded border-2 border-purple-300">
+                Recommencer
+            </button>
+        </div>
+    </div>
+    
+    <div id="correctMessage" class="pixel-message success-message">
+        <h3 class="text-2xl mb-4">Bonne réponse!</h3>
+        <p>+1 point</p>
+    </div>
+    
+    <div id="wrongMessage" class="pixel-message error-message">
+        <h3 class="text-2xl mb-4">Mauvaise réponse!</h3>
+        <p>La bonne réponse était: <span id="correctAnswerText"></span></p>
+    </div>
+    
+    <script>
+        // Données des quiz
+        const quizData = {
+            maths: {
+                title: "Mathématiques",
+                questions: [
+                    {
+                        question: "Quel est le résultat de 7 × 8?",
+                        answers: ["48", "56", "64", "72"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle est la racine carrée de 144?",
+                        answers: ["10", "12", "14", "16"],
+                        correct: 1
+                    },
+                    {
+                        question: "Combien de côtés a un hexagone?",
+                        answers: ["4", "5", "6", "8"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel est le résultat de 3² + 4²?",
+                        answers: ["7", "12", "25", "49"],
+                        correct: 2
+                    },
+                    {
+                        question: "Si x + 5 = 12, quelle est la valeur de x?",
+                        answers: ["5", "7", "12", "17"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel est le périmètre d'un carré de côté 5 cm?",
+                        answers: ["10 cm", "15 cm", "20 cm", "25 cm"],
+                        correct: 2
+                    },
+                    {
+                        question: "Combien font 1/2 + 1/4?",
+                        answers: ["1/6", "1/4", "1/2", "3/4"],
+                        correct: 3
+                    },
+                    {
+                        question: "Quel est le plus petit nombre premier?",
+                        answers: ["0", "1", "2", "3"],
+                        correct: 2
+                    }
+                ]
+            },
+            science: {
+                title: "Science",
+                questions: [
+                    {
+                        question: "Quelle planète est connue comme la planète rouge?",
+                        answers: ["Vénus", "Mars", "Jupiter", "Saturne"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel est l'élément chimique avec le symbole 'O'?",
+                        answers: ["Or", "Osmium", "Oxygène", "Oganesson"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle force maintient les planètes en orbite autour du soleil?",
+                        answers: ["Magnétisme", "Gravité", "Friction", "Poussée"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel est l'organe responsable de la pompe du sang?",
+                        answers: ["Poumon", "Foie", "Cœur", "Cerveau"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel gaz les plantes absorbent-elles pendant la photosynthèse?",
+                        answers: ["Oxygène", "Azote", "Dioxyde de carbone", "Hydrogène"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle est l'unité de mesure de la résistance électrique?",
+                        answers: ["Volt", "Ampère", "Ohm", "Watt"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel est le pH de l'eau pure?",
+                        answers: ["0", "7", "14", "10"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle particule subatomique a une charge positive?",
+                        answers: ["Électron", "Neutron", "Proton", "Photon"],
+                        correct: 2
+                    }
+                ]
+            },
+            informatique: {
+                title: "Informatique",
+                questions: [
+                    {
+                        question: "Quel langage est principalement utilisé pour le développement web front-end?",
+                        answers: ["Python", "Java", "JavaScript", "C++"],
+                        correct: 2
+                    },
+                    {
+                        question: "Que signifie 'HTML'?",
+                        answers: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlinks and Text Markup Language", "Home Tool Markup Language"],
+                        correct: 0
+                    },
+                    {
+                        question: "Quelle entreprise a développé le système d'exploitation Windows?",
+                        answers: ["Apple", "Microsoft", "Google", "IBM"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel est le nom du premier programmeur informatique?",
+                        answers: ["Alan Turing", "Ada Lovelace", "Bill Gates", "Steve Jobs"],
+                        correct: 1
+                    },
+                    {
+                        question: "Que signifie 'CPU'?",
+                        answers: ["Central Processing Unit", "Computer Processing Unit", "Central Power Unit", "Computer Power Unit"],
+                        correct: 0
+                    },
+                    {
+                        question: "Quel est le plus grand nombre qu'on peut stocker avec 8 bits?",
+                        answers: ["128", "255", "256", "512"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel protocole est utilisé pour envoyer des emails?",
+                        answers: ["HTTP", "FTP", "SMTP", "TCP"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle structure de données suit le principe 'Last In, First Out' (LIFO)?",
+                        answers: ["File", "Pile", "Liste", "Arbre"],
+                        correct: 1
+                    }
+                ]
+            },
+            physique: {
+                title: "Physique",
+                questions: [
+                    {
+                        question: "Quelle est l'unité de mesure de la force?",
+                        answers: ["Joule", "Watt", "Newton", "Pascal"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle vitesse le son atteint-il dans l'air?",
+                        answers: ["120 km/h", "340 m/s", "1000 km/h", "3×10⁸ m/s"],
+                        correct: 1
+                    },
+                    {
+                        question: "Qui a formulé la théorie de la relativité?",
+                        answers: ["Isaac Newton", "Albert Einstein", "Galilée", "Stephen Hawking"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle loi physique dit que 'Tout corps plongé dans un fluide subit une poussée verticale'?",
+                        answers: ["Loi de Newton", "Principe d'Archimède", "Loi de Coulomb", "Loi de Pascal"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle est l'unité de mesure de la puissance électrique?",
+                        answers: ["Volt", "Ampère", "Watt", "Ohm"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel phénomène explique pourquoi le ciel est bleu?",
+                        answers: ["Réfraction", "Diffusion Rayleigh", "Réflexion", "Absorption"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle est la formule de l'énergie cinétique?",
+                        answers: ["E=mc²", "F=ma", "Ek=½mv²", "P=VI"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle température correspond à 0 Kelvin?",
+                        answers: ["-100°C", "-273°C", "0°C", "100°C"],
+                        correct: 1
+                    }
+                ]
+            },
+            chimie: {
+                title: "Chimie",
+                questions: [
+                    {
+                        question: "Quel est le symbole chimique de l'or?",
+                        answers: ["Au", "Ag", "Fe", "O"],
+                        correct: 0
+                    },
+                    {
+                        question: "Quel gaz représente environ 78% de l'atmosphère terrestre?",
+                        answers: ["Oxygène", "Dioxyde de carbone", "Azote", "Hydrogène"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel est le pH d'une solution acide?",
+                        answers: [">7", "7", "<7", "14"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle est la formule chimique de l'eau?",
+                        answers: ["CO₂", "H₂O", "O₂", "NaCl"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel processus transforme un liquide en gaz?",
+                        answers: ["Condensation", "Solidification", "Évaporation", "Sublimation"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel métal est liquide à température ambiante?",
+                        answers: ["Fer", "Mercure", "Or", "Aluminium"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle réaction chimique libère de l'énergie sous forme de chaleur?",
+                        answers: ["Endothermique", "Exothermique", "Catalytique", "Neutre"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quel est l'élément le plus abondant dans l'univers?",
+                        answers: ["Oxygène", "Carbone", "Hydrogène", "Hélium"],
+                        correct: 2
+                    }
+                ]
+            },
+            histoire: {
+                title: "Histoire",
+                questions: [
+                    {
+                        question: "En quelle année a eu lieu la Révolution française?",
+                        answers: ["1492", "1776", "1789", "1815"],
+                        correct: 2
+                    },
+                    {
+                        question: "Qui était le premier président des États-Unis?",
+                        answers: ["Thomas Jefferson", "Abraham Lincoln", "George Washington", "Benjamin Franklin"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle civilisation a construit les pyramides de Gizeh?",
+                        answers: ["Grecs", "Romains", "Égyptiens", "Aztèques"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quand a commencé la Première Guerre mondiale?",
+                        answers: ["1905", "1914", "1939", "1945"],
+                        correct: 1
+                    },
+                    {
+                        question: "Qui a peint la Joconde?",
+                        answers: ["Michel-Ange", "Pablo Picasso", "Vincent van Gogh", "Léonard de Vinci"],
+                        correct: 3
+                    },
+                    {
+                        question: "Quelle était la capitale de l'Empire byzantin?",
+                        answers: ["Rome", "Athènes", "Constantinople", "Alexandrie"],
+                        correct: 2
+                    },
+                    {
+                        question: "Qui a découvert l'Amérique en 1492?",
+                        answers: ["Vasco de Gama", "Christophe Colomb", "Marco Polo", "Ferdinand Magellan"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quand a été signée la Déclaration des Droits de l'Homme et du Citoyen?",
+                        answers: ["1689", "1776", "1789", "1863"],
+                        correct: 2
+                    }
+                ]
+            },
+            geographie: {
+                title: "Géographie",
+                questions: [
+                    {
+                        question: "Quel est le plus grand océan du monde?",
+                        answers: ["Atlantique", "Indien", "Pacifique", "Arctique"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle est la capitale du Canada?",
+                        answers: ["Toronto", "Montréal", "Ottawa", "Vancouver"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel est le plus long fleuve du monde?",
+                        answers: ["Nil", "Amazone", "Yangzi Jiang", "Mississippi"],
+                        correct: 1
+                    },
+                    {
+                        question: "Dans quel pays se trouve la ville de Barcelone?",
+                        answers: ["Portugal", "France", "Italie", "Espagne"],
+                        correct: 3
+                    },
+                    {
+                        question: "Quel est le plus grand désert du monde?",
+                        answers: ["Sahara", "Gobi", "Antarctique", "Arabie"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quelle chaîne de montagnes sépare l'Europe de l'Asie?",
+                        answers: ["Alpes", "Himalaya", "Oural", "Andes"],
+                        correct: 2
+                    },
+                    {
+                        question: "Quel pays a la forme d'une botte?",
+                        answers: ["France", "Italie", "Grèce", "Espagne"],
+                        correct: 1
+                    },
+                    {
+                        question: "Quelle est la capitale de l'Australie?",
+                        answers: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                        correct: 2
+                    }
+                ]
+            }
+        };
+        
+        // Variables d'état
+        let currentModule = null;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        
+        // Éléments DOM
+        const moduleSelection = document.getElementById('moduleSelection');
+        const quizContainer = document.getElementById('quizContainer');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const quizTitle = document.getElementById('quizTitle');
+        const questionText = document.getElementById('questionText');
+        const answersContainer = document.getElementById('answersContainer');
+        const currentQuestionDisplay = document.getElementById('currentQuestion');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreText = document.getElementById('scoreText');
+        const resultMessage = document.getElementById('resultMessage');
+        const restartBtn = document.getElementById('restartBtn');
+        const correctMessage = document.getElementById('correctMessage');
+        const wrongMessage = document.getElementById('wrongMessage');
+        const correctAnswerText = document.getElementById('correctAnswerText');
+        
+        // Initialiser les modules
+        function initModules() {
+            const modulesContainer = moduleSelection.querySelector('.grid');
+            modulesContainer.innerHTML = '';
+            
+            for (const [key, module] of Object.entries(quizData)) {
+                const moduleElement = document.createElement('div');
+                moduleElement.className = 'pixel-button bg-gray-700 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-600 transition';
+                moduleElement.innerHTML = `
+                    <h3 class="text-xl text-purple-300 mb-2">${module.title}</h3>
+                    <p class="text-sm">8 questions</p>
+                `;
+                
+                moduleElement.addEventListener('click', () => startQuiz(key));
+                modulesContainer.appendChild(moduleElement);
+            }
+        }
+        
+        // Commencer le quiz
+        function startQuiz(moduleKey) {
+            currentModule = moduleKey;
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = Array(quizData[moduleKey].questions.length).fill(null);
+            
+            moduleSelection.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            
+            quizTitle.textContent = quizData[moduleKey].title;
+            showQuestion();
+        }
+        
+        // Afficher la question actuelle
+        function showQuestion() {
+            const questions = quizData[currentModule].questions;
+            const question = questions[currentQuestionIndex];
+            
+            currentQuestionDisplay.textContent = currentQuestionIndex + 1;
+            questionText.textContent = question.question;
+            
+            answersContainer.innerHTML = '';
+            question.answers.forEach((answer, index) => {
+                const answerElement = document.createElement('button');
+                answerElement.className = 'pixel-button bg-gray-700 text-left p-3 rounded border-2 border-gray-600 hover:bg-gray-600';
+                
+                // Si l'utilisateur a déjà répondu à cette question
+                if (userAnswers[currentQuestionIndex] !== null) {
+                    if (userAnswers[currentQuestionIndex] === index) {
+                        answerElement.classList.add(userAnswers[currentQuestionIndex] === question.correct ? 'correct-answer' : 'wrong-answer');
+                    } else if (index === question.correct) {
+                        answerElement.classList.add('correct-answer');
+                    }
+                }
+                
+                answerElement.innerHTML = `
+                    <span class="mr-2">${String.fromCharCode(65 + index)}.</span>
+                    <span>${answer}</span>
+                `;
+                
+                answerElement.addEventListener('click', () => selectAnswer(index));
+                answersContainer.appendChild(answerElement);
+            });
+            
+            // Gérer les boutons de navigation
+            prevBtn.classList.toggle('hidden', currentQuestionIndex === 0);
+            
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.textContent = 'Terminer';
+            } else {
+                nextBtn.textContent = 'Suivant →';
+            }
+        }
+        
+        // Sélectionner une réponse
+        function selectAnswer(answerIndex) {
+            // Ne rien faire si l'utilisateur a déjà répondu à cette question
+            if (userAnswers[currentQuestionIndex] !== null) return;
+            
+            const question = quizData[currentModule].questions[currentQuestionIndex];
+            userAnswers[currentQuestionIndex] = answerIndex;
+            
+            // Vérifier si la réponse est correcte
+            if (answerIndex === question.correct) {
+                score++;
+                showFeedback(true);
+            } else {
+                showFeedback(false, question.answers[question.correct]);
+            }
+            
+            // Mettre à jour l'affichage de la question
+            showQuestion();
+        }
+        
+        // Afficher un feedback
+        function showFeedback(isCorrect, correctAnswer = null) {
+            const feedbackElement = isCorrect ? correctMessage : wrongMessage;
+            
+            if (!isCorrect) {
+                correctAnswerText.textContent = correctAnswer;
+            }
+            
+            feedbackElement.style.display = 'block';
+            
+            setTimeout(() => {
+                feedbackElement.style.display = 'none';
+            }, 1500);
+        }
+        
+        // Question suivante
+        function nextQuestion() {
+            const questions = quizData[currentModule].questions;
+            
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+        
+        // Question précédente
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+            }
+        }
+        
+        // Afficher les résultats
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            
+            const totalQuestions = quizData[currentModule].questions.length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+            
+            scoreText.textContent = `Score: ${score}/${totalQuestions} (${percentage}%)`;
+            
+            // Message personnalisé en fonction du score
+            if (percentage === 100) {
+                resultMessage.textContent = "Parfait! Vous êtes un expert!";
+            } else if (percentage >= 75) {
+                resultMessage.textContent = "Excellent travail!";
+            } else if (percentage >= 50) {
+                resultMessage.textContent = "Pas mal! Vous pouvez faire mieux.";
+            } else {
+                resultMessage.textContent = "Continuez à apprendre! Vous vous améliorerez.";
+            }
+        }
+        
+        // Recommencer le quiz
+        function restartQuiz() {
+            resultsContainer.classList.add('hidden');
+            moduleSelection.classList.remove('hidden');
+        }
+        
+        // Écouteurs d'événements
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', prevQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+        
+        // Initialiser l'application
+        initModules();
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker CTF Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background: #0a0a0a;
+            color: #0f0;
+            overflow-x: hidden;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #0f0;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .challenge {
+            margin: 20px 0;
+            padding: 15px;
+            background: #111;
+            border-left: 5px solid #0f0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #222;
+            border: 1px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0c0;
+        }
+        .hint {
+            font-size: 0.9em;
+            color: #0a0;
+        }
+        code {
+            background: #222;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        /*!FLAG: CTF{H4ck_Th3_Pl4n3t} */
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="container">
+        <h1>Hacker CTF Challenge</h1>
+        <p>Welcome to the ultimate hacker challenge! Test your skills with these three CTF challenges. Can you uncover all the hidden flags?</p>
+        
+        <div class="challenge">
+            <h2>Challenge 1: Find the Flag</h2>
+            <p>The flag is hidden somewhere on this page. Use your hacker skills to locate it!</p>
+            <p class="hint">Hint: Sometimes the source holds the key...</p>
+            <input type="text" id="flagInput1" placeholder="Enter the flag here">
+            <button onclick="checkFlag(1)">Submit</button>
+            <p id="result1"></p>
+        </div>
+
+        <div class="challenge">
+            <h2>Challenge 2: Decode the Message</h2>
+            <p>A secret message has been encoded. Decode it to find the flag!</p>
+            <p>Encoded message: <code>Q1RGe0R3Y29kM19NZTU1NGczfQ==</code></p>
+            <p class="hint">Hint: This looks like base64 encoding. Try decoding it online or with a programming language.</p>
+            <input type="text" id="flagInput2" placeholder="Enter the flag here">
+            <button onclick="checkFlag(2)">Submit</button>
+            <p id="result2"></p>
+        </div>
+
+        <div class="challenge">
+            <h2>Challenge 3: Crack the Password</h2>
+            <p>A JavaScript function in the console holds the flag, but it’s locked behind a password check. Can you crack it?</p>
+            <p class="hint">Hint: Open the browser console (F12) and look for a function called <code>getFlag</code>. Try passing the password <code>1337h4x0r</code>.</p>
+            <input type="text" id="flagInput3" placeholder="Enter the flag here">
+            <button onclick="checkFlag(3)">Submit</button>
+            <p id="result3"></p>
+        </div>
+    </div>
+    <script>
+        // Matrix background animation
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px Courier New';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
+        window.addEventListener('resize', () => {
+            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+        });
+
+        // Flag checking logic
+        function checkFlag(challenge) {
+            const input = document.getElementById(`flagInput${challenge}`).value;
+            const result = document.getElementById(`result${challenge}`);
+            let correctFlag;
+            if (challenge === 1) {
+                correctFlag = 'CTF{H4ck_Th3_Pl4n3t}';
+            } else if (challenge === 2) {
+                correctFlag = 'CTF{D3cod3_M3554g3}';
+            } else if (challenge === 3) {
+                correctFlag = 'CTF{C0n50l3_M45t3r}';
+            }
+            if (input === correctFlag) {
+                result.textContent = 'Congratulations! You found the flag!';
+                result.style.color = '#0f0';
+            } else {
+                result.textContent = 'Incorrect flag. Try again!';
+                result.style.color = '#f00';
+            }
+        }
+
+        // Console function for Challenge 3
+        window.getFlag = function(password) {
+            if (password === '1337h4x0r') {
+                return 'CTF{C0n50l3_M45t3r}';
+            } else {
+                return 'Access Denied: Incorrect password!';
+            }
+        };
+    </script>
+</body>
+</html>

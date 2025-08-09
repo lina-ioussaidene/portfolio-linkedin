@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laria - Agent IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkblue: '#0f172a',
+                        purpleflash: '#c084fc',
+                        darkblue2: '#1e293b',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: white;
+        }
+        
+        .message-entering {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        .notification {
+            animation: slideInRight 0.3s ease-out forwards, fadeOut 0.3s ease-out 4s forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #c084fc;
+            margin: 0 2px;
+        }
+        
+        .typing-indicator span:nth-child(1) {
+            animation: bounce 1s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation: bounce 1s infinite 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation: bounce 1s infinite 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .task-completed {
+            position: relative;
+        }
+        
+        .task-completed::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(192, 132, 252, 0.1), rgba(192, 132, 252, 0.3));
+            border-radius: 0.5rem;
+            animation: highlight 2s ease-out forwards;
+        }
+        
+        @keyframes highlight {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Notification Center -->
+    <div class="fixed top-4 right-4 z-50 space-y-2 w-72 md:w-80" id="notification-center"></div>
+    
+    <!-- Header -->
+    <header class="bg-darkblue2 py-4 px-6 shadow-lg flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl animate-float">
+                L
+            </div>
+            <h1 class="text-xl font-bold">Laria <span class="text-purpleflash">Agent IA</span></h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="settings-btn" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button id="tasks-btn" class="relative text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-tasks"></i>
+                <span id="task-counter" class="absolute -top-2 -right-2 bg-purpleflash text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <aside class="w-full md:w-64 bg-darkblue2 p-4 hidden md:block border-r border-gray-800">
+            <div class="mb-6">
+                <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Tâches programmées</h2>
+                <ul id="scheduled-tasks" class="space-y-2">
+                    <li class="text-sm text-gray-300">Aucune tâche programmée</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Capacités</h2>
+                <ul class="space-y-2">
+                    <li class="flex items-center space-x-2 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-purpleflash"></i>
+                        <span>Création de contenu</span>
+                    </li>
+                    <li class="flex items-center space-x-2 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-purpleflash"></i>
+                        <span>Programmation de tâches</span>
+                    </li>
+                    <li class="flex items-center space-x-2 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-purpleflash"></i>
+                        <span>Notifications web</span>
+                    </li>
+                    <li class="flex items-center space-x-2 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-purpleflash"></i>
+                        <span>Intégration Copilot</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-gray-800">
+                <button id="new-task-btn" class="w-full bg-purpleflash hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                    <i class="fas fa-plus"></i>
+                    <span>Nouvelle tâche</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Chat Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- Messages Container -->
+            <div id="chat-container" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <!-- Welcome Message -->
+                <div class="flex space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                        L
+                    </div>
+                    <div class="bg-darkblue2 rounded-lg p-4 max-w-3xl shadow-lg message-entering">
+                        <p class="font-bold text-purpleflash">Laria</p>
+                        <p class="mt-1">Bonjour ! Je suis Laria, votre agent IA personnel. Je peux créer du contenu, programmer des tâches récurrentes et vous envoyer des notifications. Comment puis-je vous aider aujourd'hui ?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="p-4 border-t border-gray-800 bg-darkblue2">
+                <div class="flex items-end space-x-2">
+                    <div class="flex-1 bg-darkblue rounded-lg border border-gray-700 focus-within:border-purpleflash transition-colors">
+                        <textarea id="message-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 text-white p-3 resize-none" placeholder="Envoyez un message à Laria..." style="min-height: 44px;"></textarea>
+                    </div>
+                    <button id="send-btn" class="bg-purpleflash hover:bg-purple-700 text-white w-12 h-12 rounded-lg flex items-center justify-center transition-colors">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-2 flex items-center justify-between text-xs text-gray-400">
+                    <div>
+                        <button id="attach-btn" class="hover:text-white transition-colors mr-3">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button id="mic-btn" class="hover:text-white transition-colors">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <span id="char-count">0/500</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Sidebar (hidden by default) -->
+        <div id="mobile-sidebar" class="fixed inset-0 bg-black bg-opacity-70 z-40 hidden">
+            <div class="absolute right-0 top-0 h-full w-72 bg-darkblue2 p-4 shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold">Menu</h2>
+                    <button id="close-mobile-sidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-6">
+                    <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Tâches programmées</h2>
+                    <ul id="mobile-scheduled-tasks" class="space-y-2">
+                        <li class="text-sm text-gray-300">Aucune tâche programmée</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Capacités</h2>
+                    <ul class="space-y-2">
+                        <li class="flex items-center space-x-2 text-sm text-gray-300">
+                            <i class="fas fa-check-circle text-purpleflash"></i>
+                            <span>Création de contenu</span>
+                        </li>
+                        <li class="flex items-center space-x-2 text-sm text-gray-300">
+                            <i class="fas fa-check-circle text-purpleflash"></i>
+                            <span>Programmation de tâches</span>
+                        </li>
+                        <li class="flex items-center space-x-2 text-sm text-gray-300">
+                            <i class="fas fa-check-circle text-purpleflash"></i>
+                            <span>Notifications web</span>
+                        </li>
+                        <li class="flex items-center space-x-2 text-sm text-gray-300">
+                            <i class="fas fa-check-circle text-purpleflash"></i>
+                            <span>Intégration Copilot</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-800">
+                    <button id="mobile-new-task-btn" class="w-full bg-purpleflash hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                        <i class="fas fa-plus"></i>
+                        <span>Nouvelle tâche</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Task Modal -->
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+        <div class="bg-darkblue2 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Programmer une tâche</h2>
+                <button id="close-task-modal" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="task-title" class="block text-sm font-medium text-gray-300 mb-1">Titre de la tâche</label>
+                    <input type="text" id="task-title" class="w-full bg-darkblue border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-purpleflash focus:ring-0">
+                </div>
+                
+                <div>
+                    <label for="task-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                    <textarea id="task-description" rows="3" class="w-full bg-darkblue border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-purpleflash focus:ring-0"></textarea>
+                </div>
+                
+                <div>
+                    <label for="task-frequency" class="block text-sm font-medium text-gray-300 mb-1">Fréquence</label>
+                    <select id="task-frequency" class="w-full bg-darkblue border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-purpleflash focus:ring-0">
+                        <option value="once">Une seule fois</option>
+                        <option value="daily">Quotidienne</option>
+                        <option value="weekly">Hebdomadaire</option>
+                        <option value="monthly">Mensuelle</option>
+                    </select>
+                </div>
+                
+                <div id="weekly-options" class="hidden">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Jours de la semaine</label>
+                    <div class="flex space-x-2">
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="1">Lun</button>
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="2">Mar</button>
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="3">Mer</button>
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="4">Jeu</button>
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="5">Ven</button>
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="6">Sam</button>
+                        <button class="day-btn bg-darkblue text-gray-300 px-3 py-1 rounded-lg border border-gray-700 hover:bg-purpleflash hover:text-white" data-day="0">Dim</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="task-time" class="block text-sm font-medium text-gray-300 mb-1">Heure d'exécution</label>
+                    <input type="time" id="task-time" class="w-full bg-darkblue border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-purpleflash focus:ring-0">
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button id="cancel-task" class="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800">Annuler</button>
+                    <button id="save-task" class="px-4 py-2 rounded-lg bg-purpleflash text-white hover:bg-purple-700">Programmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const chatContainer = document.getElementById('chat-container');
+            const charCount = document.getElementById('char-count');
+            const taskModal = document.getElementById('task-modal');
+            const closeTaskModal = document.getElementById('close-task-modal');
+            const cancelTask = document.getElementById('cancel-task');
+            const saveTask = document.getElementById('save-task');
+            const newTaskBtn = document.getElementById('new-task-btn');
+            const tasksBtn = document.getElementById('tasks-btn');
+            const taskCounter = document.getElementById('task-counter');
+            const scheduledTasks = document.getElementById('scheduled-tasks');
+            const mobileScheduledTasks = document.getElementById('mobile-scheduled-tasks');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const closeMobileSidebar = document.getElementById('close-mobile-sidebar');
+            const mobileNewTaskBtn = document.getElementById('mobile-new-task-btn');
+            const taskFrequency = document.getElementById('task-frequency');
+            const weeklyOptions = document.getElementById('weekly-options');
+            const dayButtons = document.querySelectorAll('.day-btn');
+            
+            // Variables
+            let tasks = [];
+            let selectedDays = [];
+            let isTyping = false;
+            
+            // Initialize Notification API
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('Notification permission granted');
+                    }
+                });
+            }
+            
+            // Event Listeners
+            messageInput.addEventListener('input', updateCharCount);
+            messageInput.addEventListener('keydown', handleKeyDown);
+            sendBtn.addEventListener('click', sendMessage);
+            newTaskBtn.addEventListener('click', showTaskModal);
+            mobileNewTaskBtn.addEventListener('click', showTaskModal);
+            closeTaskModal.addEventListener('click', hideTaskModal);
+            cancelTask.addEventListener('click', hideTaskModal);
+            saveTask.addEventListener('click', saveNewTask);
+            tasksBtn.addEventListener('click', toggleMobileSidebar);
+            closeMobileSidebar.addEventListener('click', toggleMobileSidebar);
+            taskFrequency.addEventListener('change', toggleWeeklyOptions);
+            
+            dayButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const day = this.getAttribute('data-day');
+                    if (this.classList.contains('bg-purpleflash')) {
+                        this.classList.remove('bg-purpleflash', 'text-white');
+                        this.classList.add('bg-darkblue', 'text-gray-300');
+                        selectedDays = selectedDays.filter(d => d !== day);
+                    } else {
+                        this.classList.add('bg-purpleflash', 'text-white');
+                        this.classList.remove('bg-darkblue', 'text-gray-300');
+                        selectedDays.push(day);
+                    }
+                });
+            });
+            
+            // Functions
+            function updateCharCount() {
+                const count = messageInput.value.length;
+                charCount.textContent = `${count}/500`;
+                
+                if (count > 500) {
+                    charCount.classList.add('text-red-400');
+                } else {
+                    charCount.classList.remove('text-red-400');
+                }
+            }
+            
+            function handleKeyDown(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            }
+            
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message === '' || isTyping) return;
+                
+                // Add user message to chat
+                addMessage(message, 'user');
+                messageInput.value = '';
+                updateCharCount();
+                
+                // Show typing indicator
+                isTyping = true;
+                showTypingIndicator();
+                
+                // Simulate AI response after a delay
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const response = generateResponse(message);
+                    addMessage(response, 'ai');
+                    isTyping = false;
+                    
+                    // Check if the message contains task-related keywords
+                    if (message.toLowerCase().includes('programme') || message.toLowerCase().includes('tâche') || message.toLowerCase().includes('planifie')) {
+                        showTaskSuggestion();
+                    }
+                }, 1500 + Math.random() * 2000);
+            }
+            
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flex space-x-3 ${sender === 'user' ? 'justify-end' : ''}`;
+                
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div class="bg-darkblue rounded-lg p-4 max-w-3xl shadow-lg message-entering">
+                            <p class="text-right">${text}</p>
+                        </div>
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-xl">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                            L
+                        </div>
+                        <div class="bg-darkblue2 rounded-lg p-4 max-w-3xl shadow-lg message-entering">
+                            <p class="font-bold text-purpleflash">Laria</p>
+                            <p class="mt-1">${text}</p>
+                        </div>
+                    `;
+                }
+                
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            function showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'flex space-x-3';
+                typingDiv.innerHTML = `
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                        L
+                    </div>
+                    <div class="bg-darkblue2 rounded-lg p-4 max-w-xs shadow-lg">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                typingDiv.id = 'typing-indicator';
+                chatContainer.appendChild(typingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            function removeTypingIndicator() {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+            
+            function generateResponse(userMessage) {
+                const lowerMessage = userMessage.toLowerCase();
+                
+                if (lowerMessage.includes('bonjour') || lowerMessage.includes('salut') || lowerMessage.includes('hello')) {
+                    return "Bonjour ! Comment puis-je vous aider aujourd'hui ?";
+                } else if (lowerMessage.includes('ça va') || lowerMessage.includes('comment vas-tu')) {
+                    return "Je fonctionne parfaitement bien, merci de demander ! Prêt à vous assister dans toutes vos tâches.";
+                } else if (lowerMessage.includes('merci')) {
+                    return "Avec plaisir ! N'hésitez pas si vous avez d'autres demandes.";
+                } else if (lowerMessage.includes('tâche') || lowerMessage.includes('programme') || lowerMessage.includes('planifie')) {
+                    return "Je peux effectivement programmer des tâches pour vous. Voulez-vous que je vous montre comment faire ?";
+                } else if (lowerMessage.includes('créer') && lowerMessage.includes('contenu')) {
+                    return "Je peux créer divers types de contenu : articles, posts pour réseaux sociaux, scripts, etc. Quel type de contenu souhaitez-vous ?";
+                } else if (lowerMessage.includes('notification') || lowerMessage.includes('notifie')) {
+                    return "Je peux vous envoyer des notifications pour les tâches importantes. Vous recevrez des alertes même si vous n'êtes pas sur cette page.";
+                } else {
+                    const randomResponses = [
+                        "Je peux vous aider à programmer cette tâche si vous le souhaitez.",
+                        "Voulez-vous que je crée du contenu sur ce sujet ?",
+                        "Je peux planifier cette action pour qu'elle se répète automatiquement.",
+                        "Puis-je vous aider à organiser cela sous forme de tâche récurrente ?",
+                        "Je peux vous envoyer une notification lorsque ce sera fait."
+                    ];
+                    return randomResponses[Math.floor(Math.random() * randomResponses.length)];
+                }
+            }
+            
+            function showTaskSuggestion() {
+                setTimeout(() => {
+                    const suggestionDiv = document.createElement('div');
+                    suggestionDiv.className = 'flex space-x-3 mt-4';
+                    suggestionDiv.innerHTML = `
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                            L
+                        </div>
+                        <div class="bg-darkblue2 rounded-lg p-4 max-w-3xl shadow-lg message-entering">
+                            <p class="font-bold text-purpleflash">Laria</p>
+                            <p class="mt-1">Si vous souhaitez programmer cette tâche pour qu'elle se répète automatiquement, je peux vous aider. Voulez-vous créer une tâche programmée maintenant ?</p>
+                            <div class="mt-3 flex space-x-3">
+                                <button class="task-suggestion-btn bg-purpleflash hover:bg-purple-700 text-white py-1 px-3 rounded-lg text-sm transition-colors" data-response="yes">Oui, programmer</button>
+                                <button class="task-suggestion-btn bg-darkblue hover:bg-gray-700 text-white py-1 px-3 rounded-lg text-sm transition-colors" data-response="no">Non, merci</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatContainer.appendChild(suggestionDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    
+                    // Add event listeners to buttons
+                    document.querySelectorAll('.task-suggestion-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            if (this.getAttribute('data-response') === 'yes') {
+                                showTaskModal();
+                            }
+                            suggestionDiv.remove();
+                        });
+                    });
+                }, 1000);
+            }
+            
+            function showTaskModal() {
+                taskModal.classList.remove('hidden');
+                mobileSidebar.classList.add('hidden');
+            }
+            
+            function hideTaskModal() {
+                taskModal.classList.add('hidden');
+            }
+            
+            function toggleWeeklyOptions() {
+                if (taskFrequency.value === 'weekly') {
+                    weeklyOptions.classList.remove('hidden');
+                } else {
+                    weeklyOptions.classList.add('hidden');
+                }
+            }
+            
+            function saveNewTask() {
+                const title = document.getElementById('task-title').value.trim();
+                const description = document.getElementById('task-description').value.trim();
+                const frequency = taskFrequency.value;
+                const time = document.getElementById('task-time').value;
+                
+                if (!title || !time) {
+                    showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                    return;
+                }
+                
+                if (frequency === 'weekly' && selectedDays.length === 0) {
+                    showNotification('Veuillez sélectionner au moins un jour pour les tâches hebdomadaires', 'error');
+                    return;
+                }
+                
+                const task = {
+                    id: Date.now(),
+                    title,
+                    description,
+                    frequency,
+                    time,
+                    days: frequency === 'weekly' ? selectedDays : [],
+                    active: true
+                };
+                
+                tasks.push(task);
+                updateTaskList();
+                updateTaskCounter();
+                hideTaskModal();
+                
+                // Reset form
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-description').value = '';
+                document.getElementById('task-time').value = '';
+                selectedDays = [];
+                dayButtons.forEach(btn => {
+                    btn.classList.remove('bg-purpleflash', 'text-white');
+                    btn.classList.add('bg-darkblue', 'text-gray-300');
+                });
+                
+                showNotification(`Tâche "${title}" programmée avec succès`, 'success');
+                
+                // Add confirmation message to chat
+                setTimeout(() => {
+                    addMessage(`J'ai bien programmé votre tâche "${title}". Elle s'exécutera ${getFrequencyText(frequency, selectedDays)} à ${time}.`, 'ai');
+                }, 500);
+            }
+            
+            function getFrequencyText(frequency, days) {
+                const daysMap = {
+                    '0': 'dimanche',
+                    '1': 'lundi',
+                    '2': 'mardi',
+                    '3': 'mercredi',
+                    '4': 'jeudi',
+                    '5': 'vendredi',
+                    '6': 'samedi'
+                };
+                
+                switch (frequency) {
+                    case 'once':
+                        return 'une seule fois';
+                    case 'daily':
+                        return 'tous les jours';
+                    case 'weekly':
+                        if (days.length === 1) {
+                            return `tous les ${daysMap[days[0]]}`;
+                        } else {
+                            const dayNames = days.map(day => daysMap[day]).join(', ');
+                            return `tous les ${dayNames}`;
+                        }
+                    case 'monthly':
+                        return 'tous les mois';
+                    default:
+                        return '';
+                }
+            }
+            
+            function updateTaskList() {
+                if (tasks.length === 0) {
+                    scheduledTasks.innerHTML = '<li class="text-sm text-gray-300">Aucune tâche programmée</li>';
+                    mobileScheduledTasks.innerHTML = '<li class="text-sm text-gray-300">Aucune tâche programmée</li>';
+                    return;
+                }
+                
+                scheduledTasks.innerHTML = '';
+                mobileScheduledTasks.innerHTML = '';
+                
+                tasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.className = 'bg-darkblue rounded-lg p-3 hover:bg-gray-800 transition-colors cursor-pointer task-item';
+                    taskItem.setAttribute('data-id', task.id);
+                    
+                    const frequencyText = getFrequencyText(task.frequency, task.days);
+                    
+                    taskItem.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-medium">${task.title}</p>
+                                <p class="text-xs text-gray-400 mt-1">${frequencyText} à ${task.time}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="edit-task text-gray-400 hover:text-purpleflash" data-id="${task.id}">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
+                                <button class="delete-task text-gray-400 hover:text-red-400" data-id="${task.id}">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                        ${task.description ? `<p class="text-xs text-gray-300 mt-2">${task.description}</p>` : ''}
+                    `;
+                    
+                    scheduledTasks.appendChild(taskItem.cloneNode(true));
+                    mobileScheduledTasks.appendChild(taskItem);
+                });
+                
+                // Add event listeners to edit and delete buttons
+                document.querySelectorAll('.edit-task').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const taskId = parseInt(this.getAttribute('data-id'));
+                        editTask(taskId);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-task').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const taskId = parseInt(this.getAttribute('data-id'));
+                        deleteTask(taskId);
+                    });
+                });
+                
+                // Add click event to task items
+                document.querySelectorAll('.task-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const taskId = parseInt(this.getAttribute('data-id'));
+                        const task = tasks.find(t => t.id === taskId);
+                        if (task) {
+                            showTaskDetails(task);
+                        }
+                    });
+                });
+            }
+            
+            function editTask(taskId) {
+                const task = tasks.find(t => t.id === taskId);
+                if (!task) return;
+                
+                document.getElementById('task-title').value = task.title;
+                document.getElementById('task-description').value = task.description || '';
+                document.getElementById('task-frequency').value = task.frequency;
+                document.getElementById('task-time').value = task.time;
+                
+                if (task.frequency === 'weekly') {
+                    weeklyOptions.classList.remove('hidden');
+                    selectedDays = [...task.days];
+                    
+                    dayButtons.forEach(btn => {
+                        const day = btn.getAttribute('data-day');
+                        if (selectedDays.includes(day)) {
+                            btn.classList.add('bg-purpleflash', 'text-white');
+                            btn.classList.remove('bg-darkblue', 'text-gray-300');
+                        } else {
+                            btn.classList.remove('bg-purpleflash', 'text-white');
+                            btn.classList.add('bg-darkblue', 'text-gray-300');
+                        }
+                    });
+                } else {
+                    weeklyOptions.classList.add('hidden');
+                    selectedDays = [];
+                }
+                
+                // Remove the task from the list
+                tasks = tasks.filter(t => t.id !== taskId);
+                updateTaskList();
+                updateTaskCounter();
+                
+                showTaskModal();
+            }
+            
+            function deleteTask(taskId) {
+                tasks = tasks.filter(t => t.id !== taskId);
+                updateTaskList();
+                updateTaskCounter();
+                showNotification('Tâche supprimée avec succès', 'success');
+            }
+            
+            function showTaskDetails(task) {
+                const frequencyText = getFrequencyText(task.frequency, task.days);
+                
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'flex space-x-3';
+                detailsDiv.innerHTML = `
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                        L
+                    </div>
+                    <div class="bg-darkblue2 rounded-lg p-4 max-w-3xl shadow-lg message-entering">
+                        <p class="font-bold text-purpleflash">Détails de la tâche</p>
+                        <p class="mt-2"><span class="font-medium">Titre:</span> ${task.title}</p>
+                        <p class="mt-1"><span class="font-medium">Programmation:</span> ${frequencyText} à ${task.time}</p>
+                        ${task.description ? `<p class="mt-1"><span class="font-medium">Description:</span> ${task.description}</p>` : ''}
+                        <div class="mt-3 flex space-x-3">
+                            <button class="execute-now-btn bg-purpleflash hover:bg-purple-700 text-white py-1 px-3 rounded-lg text-sm transition-colors">Exécuter maintenant</button>
+                            <button class="close-details-btn bg-darkblue hover:bg-gray-700 text-white py-1 px-3 rounded-lg text-sm transition-colors">Fermer</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add to chat
+                chatContainer.appendChild(detailsDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Add event listeners
+                detailsDiv.querySelector('.execute-now-btn').addEventListener('click', () => {
+                    executeTask(task);
+                    detailsDiv.remove();
+                });
+                
+                detailsDiv.querySelector('.close-details-btn').addEventListener('click', () => {
+                    detailsDiv.remove();
+                });
+            }
+            
+            function executeTask(task) {
+                // Simulate task execution
+                addMessage(`Exécution de la tâche "${task.title}" en cours...`, 'ai');
+                
+                setTimeout(() => {
+                    const completionDiv = document.createElement('div');
+                    completionDiv.className = 'flex space-x-3';
+                    completionDiv.innerHTML = `
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purpleflash to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                            L
+                        </div>
+                        <div class="bg-darkblue2 rounded-lg p-4 max-w-3xl shadow-lg message-entering task-completed">
+                            <p class="font-bold text-purpleflash">Tâche complétée</p>
+                            <p class="mt-1">La tâche "${task.title}" a été exécutée avec succès.</p>
+                            <p class="mt-2 text-sm text-gray-300">${getTaskCompletionMessage(task)}</p>
+                        </div>
+                    `;
+                    
+                    chatContainer.appendChild(completionDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    
+                    // Show notification
+                    showNotification(`Tâche "${task.title}" complétée`, 'success');
+                    
+                    // If it's a one-time task, remove it
+                    if (task.frequency === 'once') {
+                        tasks = tasks.filter(t => t.id !== task.id);
+                        updateTaskList();
+                        updateTaskCounter();
+                    }
+                }, 2000);
+            }
+            
+            function getTaskCompletionMessage(task) {
+                const messages = [
+                    "J'ai généré le contenu comme demandé.",
+                    "La tâche a été effectuée avec succès.",
+                    "J'ai terminé ce que vous m'avez demandé.",
+                    "Mission accomplie !",
+                    "Le résultat est prêt à être utilisé."
+                ];
+                
+                if (task.title.toLowerCase().includes('contenu')) {
+                    return "Le contenu a été créé et est prêt à être publié.";
+                } else if (task.title.toLowerCase().includes('rapport')) {
+                    return "Le rapport a été généré avec les dernières données.";
+                } else {
+                    return messages[Math.floor(Math.random() * messages.length)];
+                }
+            }
+            
+            function updateTaskCounter() {
+                if (tasks.length > 0) {
+                    taskCounter.textContent = tasks.length;
+                    taskCounter.classList.remove('hidden');
+                } else {
+                    taskCounter.classList.add('hidden');
+                }
+            }
+            
+            function toggleMobileSidebar() {
+                mobileSidebar.classList.toggle('hidden');
+            }
+            
+            function showNotification(message, type) {
+                // Web Notification API
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Laria - Notification', {
+                        body: message,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png'
+                    });
+                }
+                
+                // In-app notification
+                const notification = document.createElement('div');
+                notification.className = `notification bg-darkblue2 p-3 rounded-lg shadow-lg border-l-4 ${type === 'error' ? 'border-red-500' : 'border-purpleflash'} flex items-start space-x-2`;
+                notification.innerHTML = `
+                    <div class="text-purpleflash pt-1">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm">${message}</p>
+                    </div>
+                `;
+                
+                const notificationCenter = document.getElementById('notification-center');
+                notificationCenter.appendChild(notification);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    notification.remove();
+                }, 4500);
+            }
+            
+            // Simulate some scheduled tasks
+            setTimeout(() => {
+                tasks = [
+                    {
+                        id: 1,
+                        title: "Générer le rapport hebdomadaire",
+                        description: "Rapport des performances du site web",
+                        frequency: "weekly",
+                        time: "09:00",
+                        days: ["1"], // Monday
+                        active: true
+                    },
+                    {
+                        id: 2,
+                        title: "Poster sur les réseaux sociaux",
+                        description: "Créer et poster du contenu pour Instagram et Twitter",
+                        frequency: "daily",
+                        time: "17:00",
+                        days: [],
+                        active: true
+                    }
+                ];
+                
+                updateTaskList();
+                updateTaskCounter();
+            }, 1000);
+            
+            // Simulate a task notification (for demo purposes)
+            setTimeout(() => {
+                if (tasks.length > 0) {
+                    showNotification(`Rappel : "${tasks[0].title}" est programmé pour demain à ${tasks[0].time}`, 'info');
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
