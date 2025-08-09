@@ -132,9 +132,14 @@
             window.addEventListener('mousemove', onMouseMove);
             
             // Touch move event for mobile
-            if (isMobile) {
-                window.addEventListener('touchmove', onTouchMove);
-            }
+           if (isMobile) {
+    window.addEventListener('touchstart', onTouchMove, { passive: false });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', () => {
+        targetPosition.x = 0;
+        targetPosition.z = 0;
+    });
+}
             
             // Window resize
             window.addEventListener('resize', onWindowResize);
